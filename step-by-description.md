@@ -24,19 +24,60 @@ During the initial exploration, I found three datasets containing missing values
 
 ### 1.2. Duplicated Values
 
-After to check the missing values, I started to check the duplicated values. So I try to think what was the columns that must be unqiue in each dataset and how to see this. So I compare the ids columns and the len of dataframe and for each case I decide to apply a strategy:
+After handling the missing values, I analyzed the datasets for duplicate records. My first step was to identify which columns should contain unique values in each dataset. To do this, I compared the number of unique IDs with the total number of rows in each DataFrame and investigated any discrepancies. Based on this analysis, I applied different strategies for each dataset:
 
-- **df_order_payments:** 
+- **df_order_payments:** This dataset contains multiple payment_sequential records for the same order_id, representing payments made in more than one installment. By summing the payment values for each order, it is possible to obtain the total amount paid. Therefore, I aggregated the payment information and transformed the dataset into a single row per order.
 
-- **df_order_reviews:** 
+- **df_order_reviews:** This dataset contains cases where an order has multiple reviews and where the same review is associated with multiple orders. To obtain a one-to-one relationship between orders and reviews, I kept only one review per order, selecting the one with the lowest review score, and removed the remaining duplicate records.
 
-- **df_geolocation:** in this dataset, we had the granularity of the zip code and the information of latitude and longitude. It is not wrong, but for the purpose that I was thinking, I had to keep a city/state granularity. So I had to apply some transformations, described in the next session.
+- **df_geolocation:** This dataset is stored at the ZIP code level, with latitude and longitude for each ZIP code. Although this is not incorrect, my analysis required data at the city/state level. Therefore, I aggregated the coordinates by city and state to obtain a single representative location for each city. The details of this transformation are described in the next section.
 
-- **df_order_items:** 
+- **df_order_items:** In this dataset, each product within an order is stored as a separate row. While this structure is appropriate for transactional data, my analysis required one row per order. Therefore, I aggregated the product information to calculate summary metrics such as the total order value. The details of this transformation are described in the next section.
+
+For the remaining datasets, the duplicated IDs were consistent with their expected granularity and data structure, so no additional treatment was necessary.
+
+### 1.3. Dataset Transformations
+
+Some datasets did not contain errors, but their structure was not appropriate for the analyses I wanted to perform. Therefore, I applied aggregation and transformation techniques to obtain the required level of detail.
+
+- **df_order_items:** To obtain a single summary record for each order, I grouped the dataset by order_id and created three aggregated features:
+    - **total_items:** Total number of products in the order (row count).
+    - **order_total_price:** Sum of the prices of all products in the order.
+    - **freight_total_price:** Sum of the freight cost of all products in the order.
+    
+    -> Output dataset: `df_group_orders`.
+
+- **df_geolocation:** This dataset required several transformations to reduce its granularity to the city level, correct inconsistent values, and standardize city names.
+
+    - *City and state normalization:* I used the unicodedata library to remove accents and convert all city and state names to lowercase, ensuring consistent naming across datasets.
+
+    - *Coordinate validation:* I identified invalid latitude and longitude values by comparing them with the official geographical limits of Brazil, obtained from publicly available sources:
+        - `latitute:` -33.751° to +5.272°.
+        - `longitude:` -73.991° to -33.751°.
+    
+    Any coordinates outside these ranges were considered invalid and removed.
+
+    - *City-level aggregation:* Finally, I grouped the data by the combination of state and city (to distinguish cities with the same name in different states) and calculated:
+        - **lat_mean:** Mean latitude of all ZIP codes within the city.
+        - **lng_mean:** Mean longitude of all ZIP codes within the city.
+    
+    -> Output dataset: `df_city`.
+
+Using the `df_city` dataset, I created two additional datasets containing geographical information:
+
+- **df_customer_geo:** Associates each customer with the mean latitude and longitude of their city by matching the customer's city and state with `df_city`.
+
+- **df_seller_geo:** Associates each seller with the mean latitude and longitude of their city using the same approach.
+
+## 2. Data Analysis
+
+With the base datasets configured and transformed
 
 
 
-For the others dataset, the duplicated values of ids make sense with the shape of dataframes.
+
+
+
 
 ### X. The Datasets
 
