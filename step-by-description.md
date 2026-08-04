@@ -71,7 +71,15 @@ Using the `df_city` dataset, I created two additional datasets containing geogra
 
 ## 2. Data Analysis
 
-With the base datasets configured and transformed
+With the base datasets configured and transformed, I started the data analysis.
+
+### 2.1. Financial Metrics
+
+The first idea of analysis was to see how much was spent in products and how it can be divided. So I merge some base datasets and start to plot some basic graphics.
+
+#### 2.1.1. Value Spend per State
+
+
 
 
 
