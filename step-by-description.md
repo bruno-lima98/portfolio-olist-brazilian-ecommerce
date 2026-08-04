@@ -71,23 +71,129 @@ Using the `df_city` dataset, I created two additional datasets containing geogra
 
 ## 2. Data Analysis
 
-With the base datasets configured and transformed, I started the data analysis.
+With the datasets cleaned, transformed, and prepared, I started the exploratory data analysis to better understand purchasing behavior, order characteristics, and geographical patterns.
 
 ### 2.1. Financial Metrics
 
-The first idea of analysis was to see how much was spent in products and how it can be divided. So I merge some base datasets and start to plot some basic graphics.
+The first step was to analyze the financial aspects of the orders, such as total spending and its distribution across different dimensions. To do this, I merged the required datasets and created a series of visualizations.
 
-#### 2.1.1. Value Spend per State
+#### 2.1.1. Value Spent per State
 
+<p align="center">
+  <img src="images/1_value_spent_state.png" width="300">
+</p>
 
+This chart shows the total amount spent on purchases in each Brazilian state (in millions of USD). We can observe that the state of São Paulo (SP) accounts for more than one-third of the total spending among the 27 Brazilian states, highlighting its economic importance within the dataset.
 
+#### 2.1.2. Number of Orders per Month
 
+<p align="center">
+  <img src="images/2_quantity_orders_month.png" width="800">
+</p>
 
+The number of purchases varies considerably throughout the year. Order volume gradually increases from January and reaches its peak in August. After that, there is a sharp decline, with approximately one-third fewer orders in September compared to August. This behavior may indicate seasonality in the dataset or simply reflect the available period covered by the data.
 
+### 2.2. Orders Metrics
 
+The next step was to analyze categorical and operational characteristics of the orders beyond their monetary values.
 
+#### 2.2.1. Order Status
 
-### X. The Datasets
+<p align="center">
+  <img src="images/6_orders_status_table.png" width="600">
+</p>
+
+Most orders in the dataset were successfully completed and delivered to customers. Only a small proportion of orders were canceled, unavailable, or remained in intermediate processing stages.
+
+#### 2.2.2. Distance Between Customers and Sellers
+
+<p align="center">
+  <img src="images/3_quantity_city_distance.png" width="600">
+</p>
+
+For each order, I calculated the geographical distance between the customer and the seller using their city coordinates. The distance was computed with the Haversine formula:
+
+<p align="center">
+  <img src="images/7_haversine_formula.png" width="300">
+</p>
+
+    d = the distance between coordinates [km~]
+    R = radius of Earth [km]
+    ϕ1 = latitude of Customer [rad]
+    ϕ2 = latitude of Seller [rad]
+    Δϕ = ϕ2 - ϕ1
+    Δλ = λ2 - λ1 (diference between longitude in radians) 
+
+The distribution shows that most orders occur over relatively short distances, which is expected since shorter distances generally result in lower shipping costs and faster deliveries. The long right tail of the distribution also reflects Brazil's large geographical size, where some orders are shipped over very long distances.
+
+#### 2.2.3. Average Product Price by Category
+
+<p align="center">
+  <img src="images/4_average_price_categories.png" width="300">
+</p>
+
+This chart presents the ten product categories with the highest average prices. As expected, the computers category ranks first and has an average price nearly twice that of the second most expensive category.
+
+#### 2.2.4. Review Scores
+
+<p align="center">
+  <img src="images/5_reviews_summary.png" width="300">
+</p>
+
+This chart shows the distribution of review scores assigned to orders. Customer satisfaction appears to be high: considering ratings of 4 or 5 stars as positive reviews, approximately 77% of all orders received a positive evaluation.
+
+## 3. Machine Learning
+
+In this section, I briefly explored a machine learning application using the prepared dataset. The goal was not to build a highly optimized model, but rather to practice the basic steps of a supervised learning workflow, including data preparation, feature engineering, model training, and evaluation.
+
+### 3.1. Machine Learning Dataset
+
+To build the model, I created a final dataset by combining the previously generated datasets and selecting the features that I considered most relevant for predicting customer satisfaction. The final dataset contains the following columns:
+
+- **order_id:** Order identifier (used only for reference).
+- **delivered_time_second:** Time elapsed between order creation and delivery.
+- **distance_km:** Distance between the customer and the seller.
+- **total_items:** Total number of items in the order.
+- **order_total_price:** Total value of the order.
+- **freight_total_price:** Total shipping cost.
+- **payment_type:** Payment method used.
+- **payment_installments:** Number of payment installments.
+- **review_score:** Customer review score (target variable).
+
+Since the target variable was `review_score`, I filtered the dataset to include only delivered orders. This decision was appropriate because approximately 97% of the orders had already been delivered, and only delivered orders can receive customer reviews.
+
+### 3.2. Feature Preprocessing
+
+Before training the model, I applied preprocessing techniques according to the type of each feature.
+
+#### 3.2.1. One-Hot Enconding
+
+Categorical features must be converted into numerical representations before they can be used by most machine learning algorithms. For this purpose, I applied One-Hot Encoding, which creates one binary column for each category.
+
+In this dataset, the only categorical feature was `payment_type`, which contains four possible payment methods, making the encoding process straightforward.
+
+#### 3.2.1. Feature Normalization
+
+For the numerical features, I applied StandardScaler, which standardizes each variable by subtracting its mean and dividing by its standard deviation. As a result, each feature has a mean of approximately 0 and a standard deviation of 1, allowing variables with different scales to contribute more equally during model training.
+
+### 3.3. Train-Test Split
+
+After preprocessing the features, I split the dataset into training and testing sets, reserving 20% of the observations for model evaluation. This separation helps estimate how well the model generalizes to unseen data.
+
+### 3.4. Results
+
+As a simple baseline, I evaluated the model using the R² (coefficient of determination) metric.
+
+The model achieved the following results:
+
+- **R² Train:** 0.1265
+- **R² Test:** 0.1437
+
+These scores indicate that the model explains only a small portion of the variance in the review scores. This outcome was expected, as the model was intentionally simple and used only a limited set of features without extensive feature engineering or hyperparameter optimization. Nevertheless, the exercise was valuable for practicing the complete machine learning workflow.
+
+## 4. The Datasets
+
+This section provides an overview of all the datasets used throughout the project, including their columns and a brief description of each feature.
 
 ##### **1. df_customer**
 
